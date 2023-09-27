@@ -11,7 +11,9 @@ const port = 3000;
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const csvtojson = require("csvtojson");
-
+// const twilio = require("twilio");
+// const dotenv = require("dotenv");
+// dotenv.config();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
@@ -81,20 +83,27 @@ app.post("/generate", async (req, res) => {
 app.post("/get-user", async (req, res) => {
   const code = req.body.uniqueCode;
   console.log(req.body.uniqueCode);
-  var user = await User.findOne({ uniqueCode: code });
+
+  const user = await User.findOne({ uniqueCode: code });
+
   if (user) {
-    console.log(user);
-    await User.updateOne({ uniqueCode: code }, { $set: { isAttended: true } })
-      .then(() => {
-        res.status(201).json(user);
-      })
-      .catch(() => {
-        res.status(500).json({ error: "Invalid User" });
-      });
+    if (!user.isAttended) {
+      console.log(user);
+      await User.updateOne({ uniqueCode: code }, { $set: { isAttended: true } })
+        .then(() => {
+          res.status(201).json(user);
+        })
+        .catch(() => {
+          res.status(500).json({ error: "Invalid User" });
+        });
+    } else {
+      res.status(400).json({ error: "QR Code has already been used" });
+    }
   } else {
     res.status(500).json({ error: "Invalid User" });
   }
 });
+
 //Get users-list
 
 io.on("connection", (socket) => {
@@ -104,6 +113,7 @@ io.on("connection", (socket) => {
 app.listen(port, () => {
   console.log(`Server is running on ${port}`);
 });
+
 // csvtojson()
 //   .fromFile("qr-vijaywadafinall.csv")
 //   .then((csvData) => {
@@ -111,3 +121,35 @@ app.listen(port, () => {
 //       console.log("DONEEE");
 //     });
 //   });
+// function sendSMS() {
+//   const client = new twilio(
+//     process.env.TWILIO_SID,
+//     process.env.TWILIO_AUTH_TOKEN
+//   );
+
+//   const fromNumber = "+17409001322"; // Your verified Twilio number
+//   const toNumbers = [
+//     "+918197142794",
+//     "+918296009381",
+
+//     // Add more recipient numbers as needed
+//   ];
+
+//   const messagesPromises = toNumbers.map((to) => {
+//     return client.messages.create({
+//       body: "Your message goes here",
+//       from: fromNumber,
+//       to: to,
+//     });
+//   });
+
+//   return Promise.all(messagesPromises)
+//     .then((messages) => {
+//       console.log("Messages sent:", messages);
+//     })
+//     .catch((err) => {
+//       console.error("Error sending messages:", err);
+//     });
+// }
+
+// sendSMS();
