@@ -9,6 +9,16 @@
   <title>WEL COME</title>
   <script type="text/javascript" src="/asset/instascan.min.js"></script>
   <style>
+    * {
+      background-color: #fdf7e7;
+    }
+
+    img {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
     @keyframes spin {
       from {
         transform: rotate(0deg);
@@ -28,19 +38,6 @@
       animation-timing-function: linear;
     }
 
-    .custom-background {
-      background-image: url('../asset/ncc.png');
-      /* Replace 'your-image-url.jpg' with the path to your image */
-      background-size: cover;
-      /* Adjust to your desired background size */
-      background-repeat: no-repeat;
-      /* Prevent background image from repeating */
-      background-position: center;
-      /* Center the background image */
-    }
-
-
-
     .spinner--dotted {
       width: 5rem;
       border: 0.5rem dotted var(--spinner-color);
@@ -51,6 +48,7 @@
 </head>
 
 <body class="w-[100vw] h-[100vh] flex justify-center items-center custom-background">
+  <img src="../asset/logo.png" class="xl:w-[300px] m-4 w-[150px]">
   <h3 id="msg" style="display: none" class="text-blue-950 text-center text-6xl">
     <strong>
       WELCOME TO THE LEGACY MEETS INNOVATION </strong><br />
