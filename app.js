@@ -49,6 +49,20 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
+
+// Main Colletion for QR Scanning
+const usertwoSchema = new mongoose.Schema({
+  code: {
+    type: String,
+    required: true,
+  },
+  isAttended: {
+    type: Boolean,
+    default: false,
+  },
+});
+const Usertwo = mongoose.model('Usertwo', usertwoSchema);
+
 mongoose
   .connect(mongo_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then((result) => {
@@ -96,14 +110,13 @@ app.post("/get-user-count", async (req, res) => {
     });
 });
 //Ftech User using uniqueCode
-app.post("/get-user", async (req, res) => {
+app.post("/get-user-search", async (req, res) => {
   const code = req.body.uniqueCode;
   console.log(req.body.uniqueCode, "code");
 
   // const user = await User.findOne(  {code: { $regex: new RegExp(code, 'i') }})  ;
   const user = await User.findOne({
     $or: [
-      { code: { $regex: new RegExp(code, "i") } },
       { phone: { $regex: new RegExp(code, "i") } },
       { email: { $regex: new RegExp(code, "i") } },
     ],
@@ -113,6 +126,37 @@ app.post("/get-user", async (req, res) => {
     if (user.isAttended == false) {
       console.log(user);
       await User.findOneAndUpdate(
+        { code: user.code },
+        { $set: { isAttended: true } }
+      )
+        .then(() => {
+          res.status(201).json(user);
+        })
+        .catch(() => {
+          res.status(500).json({ error: "Invalid User" });
+        });
+    } else {
+      res.status(400).json({ error: "QR Code has already been used" });
+    }
+  } else {
+    res.status(500).json({ error: "Invalid User" });
+  }
+});
+//Ftech User using uniqueCode
+app.post("/get-user-scan", async (req, res) => {
+  const code = req.body.uniqueCode;
+  console.log(req.body.uniqueCode, "code");
+  // const user = await User.findOne(  {code: { $regex: new RegExp(code, 'i') }})  ;
+  const user = await Usertwo.findOne({
+    $or: [
+      { code: { $regex: new RegExp(code, "i") } },
+    ],
+  });
+  // console.log(user);
+  if (user) {
+    if (user.isAttended == false) {
+      console.log(user);
+      await Usertwo.findOneAndUpdate(
         { code: user.code },
         { $set: { isAttended: true } }
       )
@@ -141,9 +185,9 @@ app.listen(port, () => {
 });
 
 // csvtojson()
-//   .fromFile("qr-vijaywadafinall.csv")
+//   .fromFile("mumbai-qr.csv")
 //   .then((csvData) => {
-//     User.insertMany(csvData).then(() => {
+//     Usertwo.insertMany(csvData).then(() => {
 //       console.log("DONEEE");
 //     });
 //   });

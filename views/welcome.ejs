@@ -51,50 +51,53 @@
   </head>
 
   <body class="w-screen h-screen">
-   <div class="flex flex-col justify-center items-center">
-    <div class="bg-red-500 w-72 mb-10 mt-20">
-      <img src="../asset/logo.png" class="w-full" />
-    </div>
-    <div class="flex flex-col justify-center items-center my-14">
-      <h3
-        id="msg"
-        class="text-blue-950 text-center text-6xl hidden"
-      >
-        <strong class="text-white text-center text-3xl"> WELCOME </strong><br />
-        <strong id="name" class="text-white text-center text-3xl">SACHIN DENKI</strong
-        ><br />
-      </h3>
-      <h3 id="msg2"  class="text-center hidden">
-        <strong id="name2" class="text-red-400 font-bold text-4xl"> </strong
-        ><br />
-      </h3>
-      <video
-        id="preview"
-        class=" rounded-[36px] shadow-[rgba(0,_0,_0,_0.4)_0px_30px_90px] xl:w-[40%] w-[60%] md:w-[60%]"
-      ></video>
-      <div
-        id="container"
-        class="absolute top-[50%] hidden"
-        role="status"
-        id="loading"
-      >
-        <span class="spinner spinner--dotted"></span>
+    <div class="flex flex-col justify-center items-center">
+      <div class="bg-red-500 w-72 mb-10 mt-20">
+        <img src="../asset/logo.png" class="w-full" />
+      </div>
+      <div class="flex flex-col justify-center items-center my-14">
+        <h3 id="msg" class="text-blue-950 text-center text-6xl hidden">
+          <strong class="text-white text-center text-3xl"> WELCOME TO</strong
+          ><br />
+          <strong id="name" class="text-white text-center text-3xl"
+            >GOURMET LUXE</strong
+          ><br />
+        </h3>
+        <h3 id="msg2" class="text-center hidden">
+          <strong id="name2" class="text-red-400 font-bold text-4xl"> </strong
+          ><br />
+        </h3>
+        <video
+          id="preview"
+          class="rounded-[36px] shadow-[rgba(0,_0,_0,_0.4)_0px_30px_90px] xl:w-[40%] w-[60%] md:w-[60%]"
+        ></video>
+        <div
+          id="container"
+          class="absolute top-[50%] hidden"
+          role="status"
+          id="loading"
+        >
+          <span class="spinner spinner--dotted"></span>
+        </div>
+      </div>
+      <div>
+        <form id="searchForm" class="relative">
+          <input
+            type="text"
+            id="searchQuery"
+            placeholder="Enter your search query"
+            class="py-4 px-8 bg-white rounded-lg w-[400px] h-20 text-xl"
+          />
+          <button
+            class="bg-[#CF945B] text-white py-4 px-10 font-bold text-xl rounded-r-lg absolute right-0 top-0 h-20"
+            type="button"
+            onclick="searchData()"
+          >
+            Search
+          </button>
+        </form>
       </div>
     </div>
-    <div>
-      <form id="searchForm" class="relative ">
-        <input
-          type="text"
-          id="searchQuery"
-          placeholder="Enter your search query"
-          class="py-4 px-8 bg-white rounded-lg w-[400px] h-20 text-xl"
-        />
-        <button class="bg-[#CF945B] text-white py-4 px-10 font-bold text-xl rounded-r-lg absolute right-0 top-0 h-20" type="button" onclick="searchData()">Search</button>
-      </form>
-    </div>
-  </div>
-
-    
 
     <script>
       const sppiner = document.getElementById("container");
@@ -106,13 +109,54 @@
       const searchForm = document.getElementById("searchForm");
 
       // Send search query to the server
-      function searchData() {
-        console.log("here");
-        const searchQuery = document.getElementById("searchQuery").value;
-        getUser(searchQuery);
-        document.getElementById("searchQuery").value = "";
+      async function  searchData () {
         sppiner.style.display = "flex";
         preview.style.display = "none";
+        console.log("here");
+        const uniqueCode = document.getElementById("searchQuery").value;
+        console.log("inside-function");
+        const response = await fetch("/get-user-search", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ uniqueCode }),
+        });
+        if (response.ok) {
+          try {
+            searchForm.style.display = 'none';
+            sppiner.style.display = "none";
+            msg.style.display = "block";
+
+            var timer = 4;
+            var cleartime = setInterval(function () {
+              timer--;
+              if (timer == 0) {
+                clearInterval(cleartime);
+                msg.style.display = "none";
+                preview.style.display = "block";
+                searchForm.style.display = 'block';
+              }
+            }, 1000);
+          } catch (error) {
+            console.error("Error parsing JSON:", error);
+          }
+        } else {
+          msg2.style.display = "block";
+          name2.innerText = "QR Code has already been used";
+          sppiner.style.display = "none";
+          searchForm.style.display = 'none';
+          var timer = 4;
+          var cleartime = setInterval(function () {
+            timer--;
+            if (timer == 0) {
+              clearInterval(cleartime);
+              msg2.style.display = "none";
+              preview.style.display = "block";
+              searchForm.style.display = 'block';
+            }
+          }, 1000);
+      }
       }
 
       let scanner = new Instascan.Scanner({
@@ -134,7 +178,7 @@
 
       async function getUser(uniqueCode) {
         console.log("inside-function");
-        const response = await fetch("/get-user", {
+        const response = await fetch("/get-user-scan", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -147,7 +191,6 @@
             searchForm.style.display = 'none';
             sppiner.style.display = "none";
             msg.style.display = "block";
-            name.innerText = `${userData.name}`;
 
             var timer = 4;
             var cleartime = setInterval(function () {
