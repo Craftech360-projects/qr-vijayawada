@@ -7,7 +7,7 @@ const path = require("path");
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
-const port = 3000;
+const port = 3001;
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const csvtojson = require("csvtojson");
@@ -22,21 +22,24 @@ app.set("view engine", "ejs");
 app.set("views", "views");
 
 const mongo_URI =
-  "mongodb+srv://yamuna:Dbnd0ki7s3DC0DQ3@cluster0.v6kew10.mongodb.net/qr-vijaywada";
+  "mongodb+srv://yamuna:Dbnd0ki7s3DC0DQ3@cluster0.v6kew10.mongodb.net/qr-31st";
 
 const userSchema = new mongoose.Schema({
-  serialNum: {
+  code: {
     type: String,
     required: true,
   },
-  uniqueCode: {
+  email: {
     type: String,
-    required: true,
+    required: false,
   },
-
-  userName: {
+  phone: {
     type: String,
-    required: true,
+    required: false,
+  },
+  name: {
+    type: String,
+    required: false,
   },
   isAttended: {
     type: Boolean,
@@ -64,8 +67,8 @@ app.get("/welcome", (req, res) => {
   res.render("welcome");
 });
 
-app.get("/game", (req, res) => {
-  res.render("game");
+app.get("/getCount", (req, res) => {
+  res.render("getCount");
 });
 
 //It'll genearte QR using UserID
@@ -79,17 +82,40 @@ app.post("/generate", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
+app.post("/get-user-count", async (req, res) => {
+  User.find({ isAttended: true });
+  User.countDocuments({ isAttended: true })
+    .then((count) => {
+      console.log("Count of isAttended: ", count);
+      res.status(201).json({ count: count });
+    })
+    .catch((error) => {
+      console.error("Error: ", error);
+      res.status(500).json({ error: "Invalid User" });
+    });
+});
 //Ftech User using uniqueCode
 app.post("/get-user", async (req, res) => {
   const code = req.body.uniqueCode;
-  console.log(req.body.uniqueCode);
+  console.log(req.body.uniqueCode, "code");
 
-  const user = await User.findOne({ uniqueCode: code });
-
+  // const user = await User.findOne(  {code: { $regex: new RegExp(code, 'i') }})  ;
+  const user = await User.findOne({
+    $or: [
+      { code: { $regex: new RegExp(code, "i") } },
+      { phone: { $regex: new RegExp(code, "i") } },
+      { email: { $regex: new RegExp(code, "i") } },
+    ],
+  });
+  // console.log(user);
   if (user) {
-    if (!user.isAttended) {
+    if (user.isAttended == false) {
       console.log(user);
-      await User.updateOne({ uniqueCode: code }, { $set: { isAttended: true } })
+      await User.findOneAndUpdate(
+        { code: user.code },
+        { $set: { isAttended: true } }
+      )
         .then(() => {
           res.status(201).json(user);
         })
