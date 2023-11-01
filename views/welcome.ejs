@@ -31,6 +31,9 @@
           transform: rotate(360deg);
         }
       }
+      #GFG{
+        color: white;
+      }
 
       .spinner {
         --spinner-color: #000;
@@ -48,9 +51,34 @@
         animation-duration: 5s;
       }
     </style>
+     <script> 
+      function printDiv() { 
+          var divContents = document.getElementById("GFG").innerHTML; 
+          var a = window.open('', '', 'height=500, width=500'); 
+          a.document.write('<html>'); 
+          a.document.write('<body > <h1>Div contents are <br>'); 
+          a.document.write(divContents); 
+          a.document.write('</body></html>'); 
+          a.document.close(); 
+          a.print(); 
+      } 
+  </script>
   </head>
+  
 
   <body class="w-screen h-screen">
+  <div id="GFG" style="background-color: green;"> 
+          
+        <h2>helllo </h2> 
+          
+        <p> 
+          this is the printable script
+ 
+        </p> 
+    </div> 
+      
+    <input type="button" value="click" onclick="printDiv()"> 
+  </div> 
     <div class="flex flex-col justify-center items-center">
       <div class="bg-red-500 w-72 mb-10 mt-20">
         <img src="../asset/logo.png" class="w-full" />
