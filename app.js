@@ -61,7 +61,7 @@ const usertwoSchema = new mongoose.Schema({
     default: false,
   },
 });
-const Usertwo = mongoose.model('Usertwo', usertwoSchema);
+const Usertwo = mongoose.model('users', usertwoSchema);
 
 mongoose
   .connect(mongo_URI, { useNewUrlParser: true, useUnifiedTopology: true })
