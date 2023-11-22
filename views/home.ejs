@@ -22,54 +22,109 @@
       box-sizing: border-box;
     }
 
-   
+    @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+    .spinner {
+        --spinner-color: #000;
+        aspect-ratio: 1/1;
+        border-radius: 50%;
+        animation-name: spin;
+        animation-iteration-count: infinite;
+        animation-timing-function: linear;
+      }
+
+      .spinner--dotted {
+        width: 5rem;
+        border: 0.5rem dotted var(--spinner-color);
+        display: block;
+        animation-duration: 5s;
+      }
   </style>
 </head>
 
-<body class="w-screen h-screen" >
+<body class="w-screen h-screen">
+
+  <div id="container" class="absolute top-[50%] hidden" role="status" id="loading">
+    <span class="spinner spinner--dotted"></span>
+  </div>
 
   <!-- <div class="bg-image"> -->
-  <div class="w-screen h-screen flex justify-start items-center pl-40">
-    <form id="qrForm "  action="/generate" class=" flex flex-col"  method="POST">
+  <div class="w-screen h-screen flex justify-center lg:justify-start items-center lg:pl-40">
+    <form id="qrForm " action="/generate" class=" flex flex-col" method="POST">
 
       <div class="text-white">
         <p>Name</p>
 
-        <input type="text" id="name" class="pr-24 mt-2 placeholder:text-white placeholder:text-lg pl-8 py-4 rounded-xl bg-transparent border-2 border-white focus:outline-none mb-6" name="name" required
-          placeholder="Name" />
+        <input type="text" id="name"
+          class="pr-24 mt-2 placeholder:text-white placeholder:text-lg pl-8 py-4 rounded-xl bg-transparent border-2 border-white focus:outline-none mb-6"
+          name="name" required placeholder="Name" />
       </div>
-      <div  class="text-white">
+      <div class="text-white">
         <p>Email</p>
 
-        <input type="text" id="email" class=" pr-24 mt-2  placeholder:text-white placeholder:text-lg pl-8 py-4 rounded-xl bg-transparent border-2 border-white focus:outline-none mb-6 " name="email" required
-          placeholder="Email ID" />
+        <input type="text" id="email"
+          class=" pr-24 mt-2  placeholder:text-white placeholder:text-lg pl-8 py-4 rounded-xl bg-transparent border-2 border-white focus:outline-none mb-6 "
+          name="email" required placeholder="Email ID" />
       </div>
-      <div >
-      <button type="submit" id="generate" class="px-10 py-4 rounded-xl text-black font-bold text-xl bg-white border-2 border-white focus:outline-none">
-        Sign Up
-      </button>
-  
+      <div>
+        <button type="submit" id="generate"
+          class="px-10 py-4 rounded-xl text-black font-bold text-xl bg-white border-2 border-white focus:outline-none">
+          Sign Up
+        </button>
+        <a id="dynamicLink" href="#" download="downloaded_file.pdf" class="hidden px-10 py-4 rounded-xl text-black font-bold text-xl bg-white border-2 border-white focus:outline-none">Download File</a>
+
     </form>
   </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"
+    integrity="sha512-zoJXRvW2gC8Z0Xo3lBbao5+AS3g6YWr5ztKqaicua11xHo+AvE1b0lT9ODgrHTmNUxeCw0Ry4BGRYZfXu70weg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script>
+    var socket = io();
+
+
+    socket.on("emitUrl", (imageLink) => {
+      console.log(imageLink);
+      document.getElementById("generate").style.display = 'none'
+      document.getElementById("dynamicLink").style.display = 'block'
+      const link = document.getElementById('dynamicLink');
+      link.color = 'blue'
+      // Set the href attribute dynamically
+      link.href = imageLink;
+
+      // Optionally, set the download attribute for file download
+      link.download = 'downloaded_file.png';
+      // alert('got link')
+      // window.open(link, '_blank');
+    });
+
+
     document.getElementById('qrForm').addEventListener('submit', function (e) {
       e.preventDefault(); // Prevent the default form submission behavior
-  
+      
       // Extract data from the form
       var formData = new FormData(this);
-  
+
       // Use `fetch` to send the form data to the server
       fetch('/generate', {
         method: 'POST',
         body: formData
-      },2000)
-      .then(response => response.json()) // Assuming the server responds with JSON
-      .then(data => {
-        console.log('Success:', data);
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+      }, 2000)
+        .then(response => response.json()) // Assuming the server responds with JSON
+        .then(data => {
+          console.log('Success:', data);
+          
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
     });
   </script>
 
@@ -77,4 +132,3 @@
 </body>
 
 </html>
-

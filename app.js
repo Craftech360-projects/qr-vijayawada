@@ -135,11 +135,11 @@ async function generateAndStoreRandomNumber() {
   const generatedNumbers = result ? result.numbers : [];
 
   // Generate a random number within the specified range
-  let randomNumber = Math.floor(Math.random() * 10000);
+  let randomNumber = Math.floor(Math.random() * 2000);
 
   // Check if the number has already been generated
   while (generatedNumbers.includes(randomNumber.toString())) {
-      randomNumber = Math.floor(Math.random() * 10000);
+      randomNumber = Math.floor(Math.random() * 2000);
   }
 
   // Convert the number to a 4-digit string with leading zeros
@@ -178,7 +178,7 @@ app.post("/generate", async (req, res) => {
     });
 
 
-  const dynamicImageUrl = `https://raw.githubusercontent.com/Craftech360-projects/qr-vijayawada/new-qrCode/mainImages/SYMPH${randomNumber}.png`;
+  const dynamicImageUrl = `https://raw.githubusercontent.com/Craftech360-projects/qr-vijayawada/new-qrCode/mainImages/SYMPH0002.png`;
   
   
 
@@ -215,6 +215,7 @@ app.post("/generate", async (req, res) => {
     'f8c199da7a532fcb35fc83fce0e9ec55',
     '60d75ea08bc4ff13fa68f30b531d6942',
   );
+
   const request = mailjet.post('send', { version: 'v3.1' }).request({
     Messages: [
       {
@@ -236,6 +237,7 @@ app.post("/generate", async (req, res) => {
 
   request.then(x => {
     console.log(x.body);
+    io.emit("emitUrl",dynamicImageUrl);
   }
   ).catch(err => {
     console.log(err);
@@ -245,9 +247,10 @@ app.post("/generate", async (req, res) => {
 //Get users-list
 io.on("connection", (socket) => {
   console.log("connected");
+  
 });
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server is running on ${port}`);
 });
 
