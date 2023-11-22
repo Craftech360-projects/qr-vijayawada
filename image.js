@@ -1,10 +1,28 @@
 const fs = require('fs');
+const nodeHtmlToImage = require('node-html-to-image');
 const qrcode = require('qrcode');
 
 const image = fs.readFileSync('./asset/qrdisplay.jpg');
 const base64Image = Buffer.from(image).toString('base64');
 const dataURI = 'data:image/jpeg;base64,' + base64Image;
 
+async function generateQRCodeWithFormat(numCodes, outputFolder = 'qrcodes', format = 'SYMPH') {
+
+    for (let i = 1; i <= 2000; i++) {
+       const data = `${format}${String(i).padStart(4, '0')}`;
+       
+       let newHtml= htmlContent.replace("{{qrCodeImage}}",`${imageSrc}/${data}.png`);  
+       
+        await nodeHtmlToImage({
+            output: `./mainImages/${data}.png`,
+            html: newHtml,
+        });
+    }
+}
+
+
+
+const imageSrc= "https://raw.githubusercontent.com/Craftech360-projects/qr-vijayawada/new-qrCode/qrcodes"
 
 const htmlContent = `
 <html lang="en">
@@ -48,7 +66,7 @@ const htmlContent = `
 <body>
   <div id="htmltoimage">
     <img class="background-image" src="${dataURI}" alt="background image">
-    <img class="overlay-image" src="" alt="overlay image">
+    <img class="overlay-image" src="{{qrCodeImage}}" alt="overlay image">
   </div>
 </body>
 </html>`
@@ -57,4 +75,4 @@ const htmlContent = `
 
 
 
-
+generateQRCodeWithFormat(2000, 'qrcodes', 'SYMPH');
