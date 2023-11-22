@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>emailimage</title>
+  <style>
+    body {
+      margin: 0;
+      width: 100vw; /* vw stands for viewport width */
+      height: 100vh; /* vh stands for viewport height */
+      overflow: hidden; /* Ensures no scrolling */
+      background-size: cover; /* Optional: if you want the image to cover the entire viewport */
+    }
+
+    #name-container {
+      position: absolute;
+      top: 35vh;
+      left: 21vw;
+      max-width: 80vw; /* Prevents the name container from being too wide on larger screens */
+      white-space: normal;
+    }
+
+    #name {
+      font-size: 4vw; /* Scales the font size with the width of the viewport */
+      color: white;
+    }
+
+    #qrimg {
+      position: absolute;
+      top: 43vh;
+      left: 50vw; /* Centered horizontally */
+      width: 20vw; /* Scales with the width of the viewport */
+      max-width: 160px; /* Optional: if you want to limit the maximum size */
+    }
+
+    #code {
+      position: absolute;
+      top: 54vh;
+      left: 22vw;
+      color: white;
+      font-size: 2vw; /* Scales the font size with the width of the viewport */
+    }
+
+    img {
+      max-width: 100%; /* Ensures the image is not larger than its container */
+      height: auto; /* Keeps the image aspect ratio */
+    }
+  </style>
+</head>
+
+<body>
+  <div id="htmltoimage">
+    <img src="./asset/qrdisplay.jpg" alt="no image" style="position: absolute; align-items: center; justify-content: center;  height: 100vh; object-fit: cover;">
+    <img src="./asset/qr.jpg" id="qrimg">
+
+
+
+  </div>
+  <!-- <script src=" ./app.js"></script> -->
+</body>
+
+</html>
