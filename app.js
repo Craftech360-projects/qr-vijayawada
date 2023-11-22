@@ -94,6 +94,7 @@ const usertwoSchema = new mongoose.Schema({
 const qrCodeToFile = util.promisify(QRCode.toFile);
 const User = mongoose.model('users', usertwoSchema);
 
+
 mongoose
   .connect(mongo_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then((result) => {
@@ -112,6 +113,12 @@ app.get("/welcome", (req, res) => {
   res.render("welcome");
 });
 
+
+const generatedNumbersSchema = new mongoose.Schema({
+  numbers: [String], // Store numbers as strings to preserve leading zeros
+});
+
+
 //It'll genearte QR using UserID
 app.use(bodyParser.urlencoded({ extended: true }));
 // Replace with your Mailjet API keys
@@ -120,128 +127,121 @@ const mailjet = Mailjet.apiConnect(
   'f8c199da7a532fcb35fc83fce0e9ec55',
   '60d75ea08bc4ff13fa68f30b531d6942',
 );
+const GeneratedNumbers = mongoose.model('GeneratedNumbers', generatedNumbersSchema);
 
-async function generateQRCode(text, filePath) {
-  const sanitizedText = text.replace(/[^a-z0-9]/gi, '_');
-  const qrImagePath = `${filePath}${sanitizedText}.png`
-  try {
-    await qrCodeToFile(qrImagePath, text)
-    return qrImagePath;
+async function generateAndStoreRandomNumber() {
+  // Load previously generated numbers from the Mongoose model
+  const result = await GeneratedNumbers.findOne({});
+  const generatedNumbers = result ? result.numbers : [];
+
+  // Generate a random number within the specified range
+  let randomNumber = Math.floor(Math.random() * 10000);
+
+  // Check if the number has already been generated
+  while (generatedNumbers.includes(randomNumber.toString())) {
+      randomNumber = Math.floor(Math.random() * 10000);
   }
-  catch (err) {
-    throw err
-  }
+
+  // Convert the number to a 4-digit string with leading zeros
+  const formattedNumber = randomNumber.toString().padStart(4, '0');
+
+  // Add the new number to the list of generated numbers
+  generatedNumbers.push(formattedNumber);
+
+  // Update the Mongoose model with the new list of generated numbers
+  await GeneratedNumbers.updateOne({}, { $set: { numbers: generatedNumbers } }, { upsert: true });
+
+  return formattedNumber;
 }
-
-
-function generateRandomNumber(length) {
-  const min = Math.pow(10, length - 1);
-  const max = Math.pow(10, length) - 1;
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
 
 app.post("/generate", async (req, res) => {
-  const outputDirectory = './images';
-  const qrcodeDirectory = './qrcode';
-  if (!fs.existsSync(outputDirectory)) {
-    fs.mkdirSync(outputDirectory);
-  }
-  if (!fs.existsSync(qrcodeDirectory)) {
-    fs.mkdirSync(qrcodeDirectory);
-  }
-  const qrCodePath = `${__dirname}/qrcode/`;
-  const randomNumber = generateRandomNumber(4);
-  const qrText = `SYMPH${randomNumber}`;
-  generateQRCode(qrText, qrCodePath).then(async (qrImagePath) => {
-    console.log(qrImagePath, "qrImagePath");
-    // convert backend image to data URI to attach to html
-    const image = fs.readFileSync('./asset/qrdisplay.jpg');
-    const base64Image = Buffer.from(image).toString('base64');
-    const dataURI = 'data:image/jpeg;base64,' + base64Image;
-    const qrCodeImage = fs.readFileSync(qrImagePath);
-    const qrCodxebase64Image = Buffer.from(qrCodeImage).toString('base64');
-    const qrCodedataURI = 'data:image/jpeg;base64,' + qrCodxebase64Image;
-    const email = req.body.email;
-    const name = req.body.name;
-    let newImagebase64Image = ""
 
-    await nodeHtmlToImage({
-      output: `${outputDirectory}/${qrText}.png`,
-      html: htmlContent,
+
+  // generate random qr code 
+  const randomNumber = await generateAndStoreRandomNumber();
+
+  let email = req.body.email;
+  let nameValue = req.body.name;
+
+  const newUser = new User({
+    code: `SYMPH${randomNumber}`,
+    email: email,
+    name: nameValue,
+  });
+
+  newUser.save()
+    .then(() => {
+    })
+    .catch((error) => {
+      console.error('Error saving to MongoDB:', error);
+      res.status(500).json({ message: 'Failed to register user' });
     });
 
-    const newUser = new User({
-      code: qrText,
-      email: email,
-      name: name,
-    });
 
-    newUser.save()
-      .then(() => {
-      })
-      .catch((error) => {
-        console.error('Error saving to MongoDB:', error);
-        res.status(500).json({ message: 'Failed to register user' });
-      });
+  const dynamicImageUrl = `https://raw.githubusercontent.com/Craftech360-projects/qr-vijayawada/new-qrCode/mainImages/SYMPH${randomNumber}.png`;
+  
+  
 
-    const newImage = fs.readFileSync(`${outputDirectory}/${qrText}.png`);
-    newImagebase64Image = Buffer.from(newImage).toString('base64');
+  var htmlString =
+    `<!doctype html><html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head><title>GOURMETLUXE</title><!--[if !mso]><!--><meta http-equiv="X-UA-Compatible" content="IE=edge"><!--<![endif]--><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style type="text/css">#outlook a { padding:0; }
+        body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
+        table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
+        img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
+        p { display:block;margin:13px 0; }</style><!--[if mso]>
+      <noscript>
+      <xml>
+      <o:OfficeDocumentSettings>
+        <o:AllowPNG/>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+      </xml>
+      </noscript>
+      <![endif]--><!--[if lte mso 11]>
+      <style type="text/css">
+        .mj-outlook-group-fix { width:100% !important; }
+      </style>
+      <![endif]--><style type="text/css">@media only screen and (min-width:480px) {
+          .mj-column-per-100 { width:100% !important; max-width: 100%; }
+        }</style><style media="screen and (min-width:480px)">.moz-text-html .mj-column-per-100 { width:100% !important; max-width: 100%; }</style><style type="text/css">@media only screen and (max-width:479px) {
+        table.mj-full-width-mobile { width: 100% !important; }
+        td.mj-full-width-mobile { width: auto !important; }
+      }</style><style type="text/css"></style></head><body style="word-spacing:normal;">
+      <div><!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--><div style="margin:0px auto;max-width:600px;"><table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;"><tbody><tr><td style="direction:ltr;font-size:0px;padding:20px 0;text-align:center;"><!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:600px;" ><![endif]--><div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"><table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%"><tbody><tr><td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;"><table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;"><tbody><tr><td style="width:500px;">
+      <img alt="Full Screen Image" src="https://raw.githubusercontent.com/Craftech360-projects/qr-vijayawada/new-qrCode/mainImages/SYMPH0001.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="500" height="auto"></td></tr></tbody></table></td></tr></tbody></table></div><!--[if mso | IE]></td></tr></table><![endif]--></td></tr></tbody></table></div><!--[if mso | IE]></td></tr></table><![endif]--></div></body></html>`
 
-    const request = mailjet.post('send', { version: 'v3.1' }).request({
-      Messages: [
-        {
-          From: {
-            Email: 'invite@symphony2023events.com',
-            Name: 'Symphony Event 2023',
+  console.log(htmlString);
+  const Mailjet = require('node-mailjet');
+  const mailjet = Mailjet.apiConnect(
+    'f8c199da7a532fcb35fc83fce0e9ec55',
+    '60d75ea08bc4ff13fa68f30b531d6942',
+  );
+  const request = mailjet.post('send', { version: 'v3.1' }).request({
+    Messages: [
+      {
+        From: {
+          Email: 'invite@symphony2023events.com',
+          Name: 'SYMPHONY EVENTS',
+        },
+        To: [
+          {
+            Email: email,
+            Name: nameValue,
           },
-          To: [
-            {
-              Email: email,
-              Name: name
-            },
-          ],
-          Subject: "QR Code for Registerater - Symphony 2023",
-          HTMLPART: htmlContent,
-          InlinedAttachments: [
-            {
-              "ContentType": "image/png",
-              "Filename": "bg.png",
-              "ContentID": "id1",
-              "Base64Content": base64Image
-            },
-            {
-              "ContentType": "image/png",
-              "Filename": "bg.png",
-              "ContentID": "id2",
-              "Base64Content": qrCodxebase64Image
-            },
-          ]
-        }
-      ]
-    });
+        ],
+        Subject: 'QR Code for SYMPHONY events',
+        HTMLPart: htmlString,
+      },
+    ],
+  });
 
-
-    request
-      .then((result) => {
-        console.log("Email sent successfully");
-        res.json({ message: 'Email sent successfully!' });
-        // fs.unlinkSync(qrImagePath);
-        // fs.unlinkSync(`${outputDirectory}/${qrText}.png`);
-      })
-      .catch((err) => {
-        console.error(err);
-        // Check if the headers were already sent
-        if (!res.headersSent) {
-          res.status(500).json({ message: 'Failed to send email' });
-        }
-      });
-
-  }).catch(err => {
+  request.then(x => {
+    console.log(x.body);
+  }
+  ).catch(err => {
     console.log(err);
   })
-});
-
+}
+);
 //Get users-list
 io.on("connection", (socket) => {
   console.log("connected");
