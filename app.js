@@ -11,9 +11,10 @@ const port = 3001;
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const csvtojson = require("csvtojson");
-// const twilio = require("twilio");
-// const dotenv = require("dotenv");
-// dotenv.config();
+const util = require('util');
+
+const fs = require('fs');
+const nodeHtmlToImage = require('node-html-to-image');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
@@ -22,34 +23,7 @@ app.set("view engine", "ejs");
 app.set("views", "views");
 
 const mongo_URI =
-  "mongodb+srv://yamuna:Dbnd0ki7s3DC0DQ3@cluster0.v6kew10.mongodb.net/qr-31st";
-
-const userSchema = new mongoose.Schema({
-  code: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: false,
-  },
-  phone: {
-    type: String,
-    required: false,
-  },
-  name: {
-    type: String,
-    required: false,
-  },
-  isAttended: {
-    type: Boolean,
-    default: false,
-  },
-});
-
-const User = mongoose.model("User", userSchema);
-
-
+  "mongodb+srv://yamuna:Dbnd0ki7s3DC0DQ3@cluster0.v6kew10.mongodb.net/qr-28-11st";
 // Main Colletion for QR Scanning
 const usertwoSchema = new mongoose.Schema({
   code: {
@@ -60,8 +34,15 @@ const usertwoSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  email: {
+    type: String,
+    required: false,
+  }
+
 });
-const Usertwo = mongoose.model('users', usertwoSchema);
+
+const qrCodeToFile = util.promisify(QRCode.toFile);
+const User = mongoose.model('users', usertwoSchema);
 
 mongoose
   .connect(mongo_URI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -73,6 +54,11 @@ mongoose
     console.error("Error connecting to the MongoDB database:", error);
   });
 
+
+
+
+
+
 app.get("/", (req, res) => {
   res.render("home", { qrCodeData: null });
 });
@@ -81,101 +67,192 @@ app.get("/welcome", (req, res) => {
   res.render("welcome");
 });
 
-app.get("/getCount", (req, res) => {
-  res.render("getCount");
-});
-
 //It'll genearte QR using UserID
-app.post("/generate", async (req, res) => {
-  console.log(req.body.qrText);
-  const qrText = req.body.qrText;
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Replace with your Mailjet API keys
+const Mailjet = require('node-mailjet');
+const mailjet = Mailjet.apiConnect(
+  'f8c199da7a532fcb35fc83fce0e9ec55',
+  '60d75ea08bc4ff13fa68f30b531d6942',
+);
+
+
+
+
+async function generateQRCode(text, filePath) {
+  const sanitizedText = text.replace(/[^a-z0-9]/gi, '_');
+  const qrImagePath = `${filePath}${sanitizedText}.png`
   try {
-    const qrCodeData = await QRCode.toDataURL(qrText);
-    res.render("home", { qrCodeData });
-  } catch (error) {
-    res.status(500).send("Internal Server Error");
+    await qrCodeToFile(qrImagePath, text)
+    return qrImagePath;
   }
-});
+  catch (err) {
+    throw err
+  }
+}
 
-app.post("/get-user-count", async (req, res) => {
-  User.find({ isAttended: true });
-  User.countDocuments({ isAttended: true })
-    .then((count) => {
-      console.log("Count of isAttended: ", count);
-      res.status(201).json({ count: count });
-    })
-    .catch((error) => {
-      console.error("Error: ", error);
-      res.status(500).json({ error: "Invalid User" });
+
+function generateRandomNumber(length) {
+  const min = Math.pow(10, length - 1);
+  const max = Math.pow(10, length) - 1;
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+
+app.post("/generate", async (req, res) => {
+
+
+  const outputDirectory = './images';
+  const qrcodeDirectory = './qrcode';
+  if (!fs.existsSync(outputDirectory)) {
+    fs.mkdirSync(outputDirectory);
+  }
+
+  if (!fs.existsSync(qrcodeDirectory)) {
+    fs.mkdirSync(qrcodeDirectory);
+  }
+
+  const qrCodePath = `${__dirname}/qrcode/`;
+
+  const randomNumber = generateRandomNumber(4);
+  const qrText = `SYMPH${randomNumber}`;
+  generateQRCode(qrText, qrCodePath).then(async (qrImagePath) => {
+    console.log(qrImagePath, "qrImagePath");
+
+    // convert backend image to data URI to attach to html
+    const image = fs.readFileSync('./asset/qrdisplay.jpg');
+    const base64Image = Buffer.from(image).toString('base64');
+    const dataURI = 'data:image/jpeg;base64,' + base64Image;
+
+
+    const qrCodeImage = fs.readFileSync(qrImagePath);
+    const qrCodxebase64Image = Buffer.from(qrCodeImage).toString('base64');
+    const qrCodedataURI = 'data:image/jpeg;base64,' + qrCodxebase64Image;
+
+    console.log(qrCodeImage);
+    console.log("qrCodedataUri", qrCodxebase64Image);
+    console.log("qrCodedataUri", qrCodedataURI);
+
+    const htmlContent = `
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>emailimage</title>
+  <style>
+
+  #name-container {
+    position: absolute;
+    top: 35%;
+    left: 21%;
+    max-width: 550px;
+    white-space: normal;
+  }
+
+  
+  #name {
+    font-size: xx-large;
+    color: white;
+  }
+
+    #qrimg {
+      position: absolute;
+      top: 43%;
+      left: 320px;
+      width: 160px;
+    }
+
+   
+
+    #code {
+      position: absolute;
+      top: 54%;
+      left: 22%;
+      color: white;
+      font-size: large;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="htmltoimage">
+  <img src="${dataURI}" alt="no image" class="">
+  <img src="${qrCodedataURI}" class="" id="qrimg">
+
+  <div id="name-container" class="flex flex-wrap"><p id="name" class=""></p></div>
+  
+    <div class="flex flex-wrap"><p id="code" class="" ></p></div>
+  </div>
+  <!-- <script src=" ./app.js">
+      </script> -->
+</body>
+
+</html>`
+
+
+    try {
+      await nodeHtmlToImage({
+        output: `${outputDirectory}/${qrText}.png`,
+        html: htmlContent,
+      });
+      console.log(`Image  for  with code ${qrText} was created successfully!`);
+    } catch (error) {
+      console.error(`Error generating image for `, error);
+    }
+
+    const email = req.body.email;
+    const name = req.body.name;
+    console.log(email);
+    console.log(name);
+    const request = mailjet.post('send', { version: 'v3.1' }).request({
+      Messages: [
+        {
+          From: {
+            Email: 'invite@symphony2023events.com',
+            Name: 'Symphony Event 2023',
+          },
+          To: [
+            {
+              Email: email,
+              Name: name
+            },
+          ],
+          Subject: "SYMPHONY EVENTS 2023",
+          HTMLPart: htmlContent
+        }
+      ]
     });
-});
-//Ftech User using uniqueCode
-app.post("/get-user-search", async (req, res) => {
-  const code = req.body.uniqueCode;
-  console.log(req.body.uniqueCode, "code");
 
-  // const user = await User.findOne(  {code: { $regex: new RegExp(code, 'i') }})  ;
-  const user = await User.findOne({
-    $or: [
-      { phone: { $regex: new RegExp(code, "i") } },
-      { email: { $regex: new RegExp(code, "i") } },
-    ],
-  });
-  // console.log(user);
-  if (user) {
-    if (user.isAttended == false) {
-      console.log(user);
-      await User.findOneAndUpdate(
-        { code: user.code },
-        { $set: { isAttended: true } }
-      )
-        .then(() => {
-          res.status(201).json(user);
-        })
-        .catch(() => {
-          res.status(500).json({ error: "Invalid User" });
-        });
-    } else {
-      res.status(400).json({ error: "QR Code has already been used" });
-    }
-  } else {
-    res.status(500).json({ error: "Invalid User" });
-  }
+    request
+      .then((result) => {
+        res.json({ message: 'Email sent successfully!' });
+        fs.unlinkSync(qrImagePath);
+        fs.unlinkSync(`${outputDirectory}/${qrText}.png`);
+      })
+      .catch((err) => {
+        console.error(err);
+        // Check if the headers were already sent
+        if (!res.headersSent) {
+          res.status(500).json({ message: 'Failed to send email' });
+        }
+      });
+
+  }).catch(err => {
+    console.log(err);
+  })
+
+
+
+
 });
-//Ftech User using uniqueCode
-app.post("/get-user-scan", async (req, res) => {
-  const code = req.body.uniqueCode;
-  console.log(req.body.uniqueCode, "code");
-  // const user = await User.findOne(  {code: { $regex: new RegExp(code, 'i') }})  ;
-  const user = await Usertwo.findOne({
-    $or: [
-      { code: { $regex: new RegExp(code, "i") } },
-    ],
-  });
-  // console.log(user);
-  if (user) {
-    if (user.isAttended == false) {
-      console.log(user);
-      await Usertwo.findOneAndUpdate(
-        { code: user.code },
-        { $set: { isAttended: true } }
-      )
-        .then(() => {
-          res.status(201).json(user);
-        })
-        .catch(() => {
-          res.status(500).json({ error: "Invalid User" });
-        });
-    } else {
-      res.status(400).json({ error: "QR Code has already been used" });
-    }
-  } else {
-    res.status(500).json({ error: "Invalid User" });
-  }
-});
+
+
+
 
 //Get users-list
-
 io.on("connection", (socket) => {
   console.log("connected");
 });
@@ -183,43 +260,3 @@ io.on("connection", (socket) => {
 app.listen(port, () => {
   console.log(`Server is running on ${port}`);
 });
-
-// csvtojson()
-//   .fromFile("mumbai-qr.csv")
-//   .then((csvData) => {
-//     Usertwo.insertMany(csvData).then(() => {
-//       console.log("DONEEE");
-//     });
-//   });
-// function sendSMS() {
-//   const client = new twilio(
-//     process.env.TWILIO_SID,
-//     process.env.TWILIO_AUTH_TOKEN
-//   );
-
-//   const fromNumber = "+17409001322"; // Your verified Twilio number
-//   const toNumbers = [
-//     "+918197142794",
-//     "+918296009381",
-
-//     // Add more recipient numbers as needed
-//   ];
-
-//   const messagesPromises = toNumbers.map((to) => {
-//     return client.messages.create({
-//       body: "Your message goes here",
-//       from: fromNumber,
-//       to: to,
-//     });
-//   });
-
-//   return Promise.all(messagesPromises)
-//     .then((messages) => {
-//       console.log("Messages sent:", messages);
-//     })
-//     .catch((err) => {
-//       console.error("Error sending messages:", err);
-//     });
-// }
-
-// sendSMS();

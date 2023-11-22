@@ -1,0 +1,85 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>emailimage</title>
+  <style>
+    #qrimg {
+      position: absolute;
+      top: 78%;
+      left: 15%;
+      width: 180px
+    }
+
+    #name {
+      position: absolute;
+      top: 72%;
+      left: 14%;
+      font-size: xx-large;
+    }
+
+    #code {
+      position: absolute;
+      top: 100%;
+      left: 16%;
+      color: white;
+      font-size: x-large;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="htmltoimage">
+
+
+    <img src="./asset/qrdisplay.jpg" alt="no image" class="">
+    <img src="./qrcode.png" class="" id="qrimg">
+    <p id="name" class="" style="color: white;">RAMESH PATEL</p>
+    <p id="code" class="" >GL24EF31ZN</p>
+  </div>
+  <script src=" ./app.js">
+      </script> 
+</body>
+
+</html> -->
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var form = document.getElementById('qrForm');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault(); // Prevent the normal form submission
+      var qrText = document.getElementById('qrText').value;
+      var name = document.getElementById('name').value;
+
+      // Perform an AJAX request to your server endpoint
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/generate', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.responseType = 'blob'; // Expect a binary response
+
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          // Create a new Blob object using the response data of the xhr request
+          var blob = new Blob([xhr.response], { type: 'image/png' });
+
+          // Create a link element, use it to download the blob, and then remove the link
+          var downloadLink = document.createElement('a');
+          downloadLink.href = window.URL.createObjectURL(blob);
+          downloadLink.download = 'qrcode.png';
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+        }
+      };
+
+      // Send the form data as JSON
+      var data = JSON.stringify({ qrText: qrText, name: name });
+      xhr.send(data);
+    });
+  });
+
+</script>
