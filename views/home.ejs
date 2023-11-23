@@ -91,19 +91,17 @@
 
 
     socket.on("emitUrl", (imageLink) => {
-      console.log(imageLink);
-      document.getElementById("generate").style.display = 'none'
-      document.getElementById("dynamicLink").style.display = 'block'
+  fetch(imageLink)
+    .then(response => response.blob())
+    .then(blob => {
+      const blobUrl = window.URL.createObjectURL(blob);
+      document.getElementById("generate").style.display = 'none';
       const link = document.getElementById('dynamicLink');
-      link.color = 'blue'
-      // Set the href attribute dynamically
-      link.href = imageLink;
-
-      // Optionally, set the download attribute for file download
+      link.style.display = 'block';
+      link.href = blobUrl;
       link.download = 'downloaded_file.png';
-      // alert('got link')
-      // window.open(link, '_blank');
     });
+});
 
 
     document.getElementById('qrForm').addEventListener('submit', function (e) {
