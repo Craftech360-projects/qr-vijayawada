@@ -1,31 +1,36 @@
-const fs = require('fs');
-const nodeHtmlToImage = require('node-html-to-image');
-const qrcode = require('qrcode');
+const fs = require("fs");
+const nodeHtmlToImage = require("node-html-to-image");
+const qrcode = require("qrcode");
 
-const image = fs.readFileSync('./asset/qrdisplay.png');
-const base64Image = Buffer.from(image).toString('base64');
-const dataURI = 'data:image/jpeg;base64,' + base64Image;
+const image = fs.readFileSync("./asset/qrdisplay.png");
+const base64Image = Buffer.from(image).toString("base64");
+const dataURI = "data:image/jpeg;base64," + base64Image;
 
-async function generateQRCodeWithFormat(numCodes, outputFolder = 'qrcodes', format = 'SYMPH') {
+async function generateQRCodeWithFormat(
+  numCodes,
+  outputFolder = "qrcodes",
+  format = "SYMPH"
+) {
+  for (let i = 1; i <= numCodes; i++) {
+    const data = `${format}${String(i).padStart(4, "0")}`;
 
-    for (let i = 1; i <= numCodes; i++) {
-       const data = `${format}${String(i).padStart(4, '0')}`;
-       
-       let newHtml= htmlContent1.replace("{{qrCodeImage}}",`${imageSrc}/${data}.png`);  
-       
-        await nodeHtmlToImage({
-            output: `./mainImages/${data}.png`,
-            html: newHtml,
-        });
-        console.log('image generated');
-    }
+    let newHtml = htmlContent1.replace(
+      "{{qrCodeImage}}",
+      `${imageSrc}/${data}.png`
+    );
+
+    await nodeHtmlToImage({
+      output: `./mainImages/${data}.png`,
+      html: newHtml,
+    });
+    console.log(`image generated ${data}`);
+  }
 }
 
+const imageSrc =
+  "https://raw.githubusercontent.com/Craftech360-projects/qr-vijayawada/new-qrCode/qrcodes";
 
-
-const imageSrc= "https://raw.githubusercontent.com/Craftech360-projects/qr-vijayawada/new-qrCode/qrcodes"
-
-const htmlContent1=`
+const htmlContent1 = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -62,8 +67,8 @@ const htmlContent1=`
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      max-width: 15%; /* Adjust the size as needed */
-      max-height: 15%; /* Adjust the size as needed */
+      width: 20%; /* Adjust the size as needed */
+      height: 14%; /* Adjust the size as needed */
     }
   </style>
   <title>emailimage</title>
@@ -75,8 +80,7 @@ const htmlContent1=`
   </div>
 </body>
 </html>
-`
-
+`;
 
 const htmlContent = `
 <html lang="en">
@@ -123,10 +127,6 @@ const htmlContent = `
     <img class="overlay-image" src="{{qrCodeImage}}" alt="overlay image">
   </div>
 </body>
-</html>`
+</html>`;
 
-
-
-
-
-generateQRCodeWithFormat(2000, 'qrcodes', 'SYMPH');
+generateQRCodeWithFormat(2000, "qrcodes", "SYMPH");
