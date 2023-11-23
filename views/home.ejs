@@ -91,24 +91,28 @@
 
 
     socket.on("emitUrl", (imageLink) => {
-  fetch(imageLink)
-    .then(response => response.blob())
-    .then(blob => {
-      const blobUrl = window.URL.createObjectURL(blob);
-      document.getElementById("generate").style.display = 'none';
+      console.log(imageLink);
+      document.getElementById("generate").style.display = 'none'
+      document.getElementById("dynamicLink").style.display = 'block'
       const link = document.getElementById('dynamicLink');
-      link.style.display = 'block';
-      link.href = blobUrl;
+      link.color = 'blue'
+      // Set the href attribute dynamically
+      link.href = imageLink;
+
+      // Optionally, set the download attribute for file download
       link.download = 'downloaded_file.png';
+      // alert('got link')
+      // window.open(link, '_blank');
     });
-  })
 
 
     document.getElementById('qrForm').addEventListener('submit', function (e) {
+      e.preventDefault(); // Prevent the default form submission behavior
       
       // Extract data from the form
       var formData = new FormData(this);
 
+      // Use `fetch` to send the form data to the server
       fetch('/generate', {
         method: 'POST',
         body: formData
