@@ -105,12 +105,10 @@
 
 
     document.getElementById('qrForm').addEventListener('submit', function (e) {
-      e.preventDefault(); // Prevent the default form submission behavior
       
       // Extract data from the form
       var formData = new FormData(this);
 
-      // Use `fetch` to send the form data to the server
       fetch('/generate', {
         method: 'POST',
         body: formData
