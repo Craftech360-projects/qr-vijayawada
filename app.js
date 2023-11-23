@@ -290,7 +290,7 @@ app.post("/generate", async (req, res) => {
               Name: nameValue,
             },
           ],
-          Subject: "QR Code for SYMPHONY events",
+          Subject: "QR Code for Registerater - Symphony 2023",
           HTMLPart: htmlString,
         },
       ],
