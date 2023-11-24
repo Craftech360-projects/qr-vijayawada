@@ -23,30 +23,30 @@
     }
 
     @keyframes spin {
-        from {
-          transform: rotate(0deg);
-        }
-
-        to {
-          transform: rotate(360deg);
-        }
+      from {
+        transform: rotate(0deg);
       }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     .spinner {
-        --spinner-color: #000;
-        aspect-ratio: 1/1;
-        border-radius: 50%;
-        animation-name: spin;
-        animation-iteration-count: infinite;
-        animation-timing-function: linear;
-      }
+      --spinner-color: #000;
+      aspect-ratio: 1/1;
+      border-radius: 50%;
+      animation-name: spin;
+      animation-iteration-count: infinite;
+      animation-timing-function: linear;
+    }
 
-      .spinner--dotted {
-        width: 5rem;
-        border: 0.5rem dotted var(--spinner-color);
-        display: block;
-        animation-duration: 5s;
-      }
+    .spinner--dotted {
+      width: 5rem;
+      border: 0.5rem dotted var(--spinner-color);
+      display: block;
+      animation-duration: 5s;
+    }
   </style>
 </head>
 
@@ -70,6 +70,7 @@
       <div class="text-white">
         <p>Email</p>
 
+        <input type="hidden" name="socketId" id="socketIdInput" value="">
         <input type="text" id="email"
           class=" pr-24 mt-2  placeholder:text-white placeholder:text-lg pl-8 py-4 rounded-xl bg-transparent border-2 border-white focus:outline-none mb-6 "
           name="email" required placeholder="Email ID" />
@@ -79,7 +80,9 @@
           class="px-10 py-4 rounded-xl text-black font-bold text-xl bg-white border-2 border-white focus:outline-none">
           Sign Up
         </button>
-        <a id="dynamicLink" href="#" download="downloaded_file.pdf" class="hidden px-10 py-4 rounded-xl text-black font-bold text-xl bg-white border-2 border-white focus:outline-none">Download File</a>
+        <a id="dynamicLink" href="#" download="downloaded_file.pdf"
+          class="hidden px-10 py-4 rounded-xl text-black font-bold text-xl bg-white border-2 border-white focus:outline-none">Download
+          File</a>
 
     </form>
   </div>
@@ -88,42 +91,40 @@
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script>
     var socket = io();
-
+    let socketId="";
+    socket.on('connect', () => {
+      socketId = socket.id;
+      console.log('Socket ID:', socketId);
+      document.getElementById('socketIdInput').value = socketId;
+    });
 
     socket.on("emitUrl", (imageLink) => {
-  fetch(imageLink)
-    .then(response => response.blob())
-    .then(blob => {
-      const blobUrl = window.URL.createObjectURL(blob);
-      document.getElementById("generate").style.display = 'none';
-      const link = document.getElementById('dynamicLink');
-      link.style.display = 'block';
-      link.href = blobUrl;
-      link.download = 'downloaded_file.png';
-      link.addEventListener('click', () => {
-        // This will refresh the page right after the link is clicked.
-        // Note that this does not guarantee that the file has been downloaded.
-        window.location.reload();
-      },2000);
+      fetch(imageLink)
+        .then(response => response.blob())
+        .then(blob => {
+          const blobUrl = window.URL.createObjectURL(blob);
+          document.getElementById("generate").style.display = 'none';
+          const link = document.getElementById('dynamicLink');
+          link.style.display = 'block';
+          link.href = blobUrl;
+          link.download = 'downloaded_file.png';
+          link.addEventListener('click', () => {
+            window.location.reload();
+          }, 2000);
+        });
     });
-});
 
 
     document.getElementById('qrForm').addEventListener('submit', function (e) {
       e.preventDefault(); // Prevent the default form submission behavior
-      
-      // Extract data from the form
       var formData = new FormData(this);
-
-      // Use `fetch` to send the form data to the server
       fetch('/generate', {
         method: 'POST',
         body: formData
       }, 2000)
-        .then(response => response.json()) // Assuming the server responds with JSON
+        .then(response => response.json()) 
         .then(data => {
           console.log('Success:', data);
-          
         })
         .catch((error) => {
           console.error('Error:', error);

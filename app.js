@@ -218,7 +218,7 @@ app.post("/generate", async (req, res) => {
     );
     await sendEmail(req.body.email, req.body.name, existingRandomNumber);
     const dynamicImageUrl = `https://raw.githubusercontent.com/Craftech360-projects/qr-vijayawada/new-qrCode/mainImages/SYMPH${existingRandomNumber}.png`;
-    io.emit("emitUrl", dynamicImageUrl);
+    io.to(req.body.socketId).emit("emitUrl", dynamicImageUrl);
     // return res
     //   .status(200)
     //   .json({ message: "User already exists. Existing QR code sent." });
@@ -300,7 +300,7 @@ app.post("/generate", async (req, res) => {
     request
       .then((x) => {
         console.log(x.body);
-        io.emit("emitUrl", dynamicImageUrl);
+        io.to(req.body.socketId).emit("emitUrl", dynamicImageUrl);
       })
       .catch((err) => {
         console.log(err);
@@ -310,6 +310,10 @@ app.post("/generate", async (req, res) => {
 //Get users-list
 io.on("connection", (socket) => {
   console.log("connected");
+
+  socket.on("joinRoom", () => {
+    socket.join(socket.id);
+  });
 });
 
 server.listen(port, () => {
