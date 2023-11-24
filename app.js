@@ -208,7 +208,8 @@ async function sendEmail(email, name, randomNumber) {
 }
 
 app.post("/generate", async (req, res) => {
-  const existingUser = await User.findOne({ email: req.body.email });
+  let email= req.body.email;
+  const existingUser = await User.findOne({ email: email});
 
   if (existingUser) {
     const existingRandomNumber = existingUser.code.slice(5); // Extract the random number from the existing code
@@ -314,3 +315,4 @@ io.on("connection", (socket) => {
 server.listen(port, () => {
   console.log(`Server is running on ${port}`);
 });
+

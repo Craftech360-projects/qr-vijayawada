@@ -100,6 +100,11 @@
       link.style.display = 'block';
       link.href = blobUrl;
       link.download = 'downloaded_file.png';
+      link.addEventListener('click', () => {
+        // This will refresh the page right after the link is clicked.
+        // Note that this does not guarantee that the file has been downloaded.
+        window.location.reload();
+      },2000);
     });
 });
 
