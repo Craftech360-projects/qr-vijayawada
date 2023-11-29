@@ -131,21 +131,21 @@
     //     }
     //   });
 
-    async function getUser(uniqueCode) {
+    async function getUser(code) {
       console.log("inside-function");
-      const response = await fetch("/get-user-scan", {
+      const response = await fetch("/get-user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ uniqueCode }),
+        body: JSON.stringify({ code }),
       });
       if (response.ok) {
         try {
           const userData = await response.json();
           sppiner.style.display = "none";
           msg.style.display = "block";
-          name.innerText = `${userData.uniqueCode}`;
+          name.innerText = `${userData.code}`;
           var timer = 4;
           var cleartime = setInterval(function () {
             timer--;
