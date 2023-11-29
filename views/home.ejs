@@ -109,8 +109,12 @@
           link.href = blobUrl;
           link.download = 'downloaded_file.png';
           link.addEventListener('click', () => {
-            window.location.reload();
-          }, 2000);
+            setTimeout(()=>{
+              link.href= imageLink
+              window.open(link, '_blank')
+              window.location.reload();
+            },2000)
+          });
         });
     });
 
