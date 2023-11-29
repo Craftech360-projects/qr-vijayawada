@@ -337,6 +337,7 @@ const bodyParser = require("body-parser");
 const csvtojson = require("csvtojson");
 const util = require("util");
 const path = require('path');
+const Instascan=require('instascan')
 
 const htmlContent = `
 <html lang="en">
