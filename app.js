@@ -328,7 +328,6 @@ const http = require("http");
 const ejs = require("ejs");
 const socketIo = require("socket.io");
 const QRCode = require("qrcode");
-const path = require("path");
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
