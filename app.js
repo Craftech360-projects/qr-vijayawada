@@ -483,6 +483,37 @@ async function generateAndStoreRandomNumber() {
   return formattedNumber;
 }
 
+app.post("/get-user-scan", async (req, res) => {
+  const code = req.body.code;
+  console.log(req.body.code, "code");
+  // const user = await User.findOne(  {code: { $regex: new RegExp(code, 'i') }})  ;
+  const user = await Usertwo.findOne({
+    $or: [
+      { code: { $regex: new RegExp(code, "i") } },
+    ],
+  });
+  // console.log(user);
+  if (user) {
+    if (user.isAttended == false) {
+      console.log(user);
+      await Usertwo.findOneAndUpdate(
+        { code: user.code },
+        { $set: { isAttended: true } }
+      )
+        .then(() => {
+          res.status(201).json(user);
+        })
+        .catch(() => {
+          res.status(500).json({ error: "Invalid User" });
+        });
+    } else {
+      res.status(400).json({ error: "QR Code has already been used" });
+    }
+  } else {
+    res.status(500).json({ error: "Invalid User" });
+  }
+});
+
 async function sendEmail(email, name, randomNumber) {
   const dynamicImageUrl = `https://raw.githubusercontent.com/Craftech360-projects/qr-vijayawada/new-qrCode/mainImages/${randomNumber}.png`;
 
