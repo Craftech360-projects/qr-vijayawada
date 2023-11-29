@@ -393,6 +393,8 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use("/asset", express.static(path.join(__dirname, "asset")));
 app.set("view engine", "ejs");
 app.set("views", "views");
+const path = require('path');
+
 
 const mongo_URI =
   "mongodb+srv://yamuna:Dbnd0ki7s3DC0DQ3@cluster0.v6kew10.mongodb.net/qr-28-11st";
@@ -434,8 +436,9 @@ app.get("/", (req, res) => {
 });
 
 app.get("/welcome", (req, res) => {
-  res.render("welcome");
+  res.sendFile(path.join(__dirname, 'views/welcome.html'));
 });
+
 
 const generatedNumbersSchema = new mongoose.Schema({
   numbers: [String], // Store numbers as strings to preserve leading zeros
