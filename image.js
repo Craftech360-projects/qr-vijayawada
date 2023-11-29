@@ -9,9 +9,10 @@ const dataURI = "data:image/jpeg;base64," + base64Image;
 async function generateQRCodeWithFormat(
   numCodes,
   outputFolder = "qrcodes",
-  format = "SYMPH"
+  format = "SYMPH",
+  startFrom = 2001 // Added a new parameter to specify the starting point
 ) {
-  for (let i = 1; i <= numCodes; i++) {
+  for (let i = startFrom; i < startFrom + numCodes; i++) { // Adjust the loop to start from `startFrom`
     const data = `${format}${String(i).padStart(4, "0")}`;
 
     let newHtml = htmlContent1.replace(
@@ -129,4 +130,4 @@ const htmlContent = `
 </body>
 </html>`;
 
-generateQRCodeWithFormat(2000, "qrcodes", "SYMPH");
+generateQRCodeWithFormat(2000, "qrcodes", "SYMPH", 2001);
