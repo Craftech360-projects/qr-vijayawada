@@ -320,9 +320,6 @@
 //   console.log(`Server is running on ${port}`);
 // });
 
-
-
-
 const express = require("express");
 const http = require("http");
 const ejs = require("ejs");
@@ -336,8 +333,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const csvtojson = require("csvtojson");
 const util = require("util");
-const path = require('path');
-const Instascan=require('instascan')
+const path = require("path");
 
 const htmlContent = `
 <html lang="en">
@@ -395,7 +391,6 @@ app.use("/asset", express.static(path.join(__dirname, "asset")));
 app.set("view engine", "ejs");
 app.set("views", "views");
 
-
 const mongo_URI =
   "mongodb+srv://yamuna:Dbnd0ki7s3DC0DQ3@cluster0.v6kew10.mongodb.net/qr-28-11st";
 
@@ -436,9 +431,9 @@ app.get("/", (req, res) => {
 });
 
 app.get("/welcome", (req, res) => {
-  res.sendFile(path.join(__dirname, 'views/welcome.html'));
+  res.render("welcome", { qrCodeData: null });
+  // res.sendFile(path.join(__dirname, "views/welcome.html"));
 });
-
 
 const generatedNumbersSchema = new mongoose.Schema({
   numbers: [String], // Store numbers as strings to preserve leading zeros
@@ -486,21 +481,21 @@ async function generateAndStoreRandomNumber() {
   return formattedNumber;
 }
 
-app.post('/get-user', async (req, res) => {
+app.post("/get-user", async (req, res) => {
   const uniqueCode = req.body.code;
   console.log(req.body.uniqueCode);
   var user = await User.findOne({ code: uniqueCode });
   if (user) {
     console.log(user);
-    await User.updateOne({ code: uniqueCode }, { $set: { isAttended: true } }).then(() => {
-      res.status(201).json(user);
-    }).catch(() => {
-      res.status(500).json({ error: 'Invalid User' });
-    })
-  }
-  else {
-    res.status(500).json({ error: 'Invalid User' });
-    
+    await User.updateOne({ code: uniqueCode }, { $set: { isAttended: true } })
+      .then(() => {
+        res.status(201).json(user);
+      })
+      .catch(() => {
+        res.status(500).json({ error: "Invalid User" });
+      });
+  } else {
+    res.status(500).json({ error: "Invalid User" });
   }
 });
 
