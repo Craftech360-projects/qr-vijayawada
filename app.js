@@ -336,6 +336,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const csvtojson = require("csvtojson");
 const util = require("util");
+const path = require('path');
 
 const htmlContent = `
 <html lang="en">
@@ -392,7 +393,6 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use("/asset", express.static(path.join(__dirname, "asset")));
 app.set("view engine", "ejs");
 app.set("views", "views");
-const path = require('path');
 
 
 const mongo_URI =
