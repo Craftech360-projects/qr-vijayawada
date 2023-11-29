@@ -87,10 +87,25 @@
       preview.style.display = "none";
     });
 
+    Instascan.Camera.getCameras().then(function (cameras) {
+        if (cameras.length > 0) {
+          scanner.start(cameras[0]).catch(function (e) {
+            console.error(e);
+            alert('Error starting camera: ' + e.message);
+          });
+        } else {
+          console.error('No cameras found.');
+          alert('No cameras found.');
+        }
+      }).catch(function (e) {
+        console.error(e);
+        alert('Cannot access camera: ' + e.message);
+      });
+
     // Instascan.Camera.getCameras().then(function (cameras) {
     //   if (cameras.length > 0) {
     //     scanner.start(cameras[0]).catch(function (e) {
-    //       console.error(e);
+    //       console.error('Error starting camera:', e);
     //       alert('Error starting camera: ' + e.message);
     //     });
     //   } else {
@@ -98,24 +113,9 @@
     //     alert('No cameras found.');
     //   }
     // }).catch(function (e) {
-    //   console.error(e);
+    //   console.error('Cannot access camera:', e);
     //   alert('Cannot access camera: ' + e.message);
     // });
-
-    Instascan.Camera.getCameras().then(function (cameras) {
-      if (cameras.length > 0) {
-        scanner.start(cameras[0]).catch(function (e) {
-          console.error('Error starting camera:', e);
-          alert('Error starting camera: ' + e.message);
-        });
-      } else {
-        console.error('No cameras found.');
-        alert('No cameras found.');
-      }
-    }).catch(function (e) {
-      console.error('Cannot access camera:', e);
-      alert('Cannot access camera: ' + e.message);
-    });
 
 
 
