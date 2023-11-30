@@ -48,7 +48,7 @@
       }
 
       @media (min-width: 641px) {
-        body{
+        body {
           background-position: center;
         }
       }
@@ -59,16 +59,19 @@
     class="bg-[url('/asset/bg1.png')] bg-no-repeat w-screen h-screen bg-cover"
   >
     <div class="flex justify-start items-center h-screen w-screen">
-      <div class="">
-        <h3 id="msg" style="display: none" class="text-4xl text-center">
-          WELCOME TO SYMPHONY 2023 <br />
-          <strong
-            id="name"
-            {{name}}
-            class="text-white font-bold text-4xl"
-          ></strong
-          ><br />
-        </h3>
+      <div class="absolute top-0 left-0 w-screen h-screen z-50">
+        <div class="">
+          <h3 id="msg" style="display: none" class="text-9xl text-center">
+            <!-- WELCOME TO SYMPHONY 2023 <br /> -->
+            <strong
+              id="name"
+              {{name}}
+              class="text-white font-bold text-9xlxl absolute top-1/2"
+            ></strong
+            ><br />
+          </h3>
+        </div>
+
         <h3 id="msg2" style="display: none" class="text-center">
           <strong id="name2" class="text-red-400 font-bold text-4xl"></strong
           ><br />
@@ -152,6 +155,27 @@
       //     }
       //   });
 
+      const parentDiv = document.createElement("div"); // Creating a new div
+
+      // parentDiv.style.width = "100vw";
+      // parentDiv.style.height = "100vh";
+      // parentDiv.style.position = "absolute";
+      // parentDiv.style.top = "0";
+      // parentDiv.style.left = "0";
+      // parentDiv.style.backgroundImage = "url('/asset/bg1.png')";
+      // parentDiv.style.backgroundSize = "cover";
+      // parentDiv.style.backgroundPosition = "center";
+      // parentDiv.style.zIndex = "1000";
+
+      // // Append each element to the new div
+      // parentDiv.appendChild(msg);
+      // parentDiv.appendChild(name);
+      // parentDiv.appendChild(msg2);
+      // parentDiv.appendChild(name2);
+
+      // // Finally, append the parent div to the body or another existing element
+      // document.body.appendChild(parentDiv);
+
       async function getUser(code) {
         console.log("inside-function");
         const response = await fetch("/get-user", {
@@ -166,6 +190,18 @@
             const userData = await response.json();
             sppiner.style.display = "none";
             msg.style.display = "block";
+            msg.style.width = "100vw";
+            msg.style.height = "100vh";
+            // msg.style.backgroundColor = "rgba(0, 0, 0, 1)";
+            msg.style.backgroundImage = "url('/asset/wlcm.png')";
+            msg.style.display = "absolute";
+            msg.style.position = "";
+            msg.style.top = "0";
+            msg.style.left = "0";
+            msg.style.zIndex = "999";
+            msg.style.backgroundSize = "cover"; // Ensure the image covers the entire div
+            msg.style.backgroundPosition = "center";
+
             name.innerText = `${userData.name}`;
             var timer = 4;
             var cleartime = setInterval(function () {
@@ -184,6 +220,7 @@
           msg2.style.display = "block";
           name2.innerText = "Inavlid User";
           sppiner.style.display = "none";
+
           var timer = 4;
           var cleartime = setInterval(function () {
             timer--;
